@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/pagination/post_notifier.dart';
 import 'package:flutter_application_1/pagination/post_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,24 +33,41 @@ class _PostPageState extends ConsumerState<PostPage> {
         appBar: AppBar(
           title: Text('Posts'),
         ),
-        body: RefreshIndicator(
-          onRefresh: () async => postNotifier.refresh(),
-          child: ListView.builder(
-              controller: controller,
-              itemCount: posts.length + (postNotifier.hasMore ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index < posts.length) {
-                  final post = posts[index];
-                  return ListTile(
-                    title: Text(post.title),
-                    subtitle: Text(post.body),
-                  );
-                } else {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-              }),
+        body: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: "Search",
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.search),
+                ),
+                onChanged: (value) => postNotifier.search(value),
+              ),
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async => postNotifier.refresh(),
+                child: ListView.builder(
+                    controller: controller,
+                    itemCount: posts.length + (postNotifier.hasMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index < posts.length) {
+                        final post = posts[index];
+                        return ListTile(
+                          title: Text(post.title),
+                          subtitle: Text(post.body),
+                        );
+                      } else {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                    }),
+              ),
+            ),
+          ],
         ));
   }
 }
