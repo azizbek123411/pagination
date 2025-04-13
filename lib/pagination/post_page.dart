@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/pagination/post_notifier.dart';
 import 'package:flutter_application_1/pagination/post_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,42 +11,47 @@ class PostPage extends ConsumerStatefulWidget {
 }
 
 class _PostPageState extends ConsumerState<PostPage> {
+  final controller = ScrollController();
 
-
-  final controller=ScrollController();
-
-
-@override
+  @override
   void initState() {
     super.initState();
     controller.addListener(scrollListener);
   }
 
-
-  void scrollListener(){
-    if(controller.position.pixels>=controller.position.maxScrollExtent-200){
+  void scrollListener() {
+    if (controller.position.pixels >=
+        controller.position.maxScrollExtent - 200) {
       ref.read(postProvider.notifier).fetchMorePosts();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final posts=ref.watch(postProvider);
+    final posts = ref.watch(postProvider);
+    final postNotifier = ref.read(postProvider.notifier);
     return Scaffold(
-appBar: AppBar(title: Text('Posts'),),
-body:RefreshIndicator(
-  onRefresh: ()async =>ref.read(postProvider.notifier).refresh(),
-  child: ListView.builder(
-    controller: controller,
-    itemCount: posts.length,
-    itemBuilder: (context,index){
-    final post=posts[index];
-    return ListTile(
-      title: Text(post.title),
-      subtitle: Text(post.body),
-    );
-  }),
-)
-    );
+        appBar: AppBar(
+          title: Text('Posts'),
+        ),
+        body: RefreshIndicator(
+          onRefresh: () async => postNotifier.refresh(),
+          child: ListView.builder(
+              controller: controller,
+              itemCount: posts.length + (postNotifier.hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index < posts.length) {
+                  final post = posts[index];
+                  return ListTile(
+                    title: Text(post.title),
+                    subtitle: Text(post.body),
+                  );
+                } else {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              }),
+        ));
   }
 }
